@@ -20,13 +20,14 @@
 using ICities;
 using System.Collections.Generic;
 using ColossalFramework;
+using ColossalFramework.Math;
 using ColossalFramework.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-using System.IO.Compression;
 using System;
+using UnityEngine;
 
-namespace ControlBuildingLevelUpMod {
+namespace ControlBuildingLevelMod {
     public static class Buildings {
         public const int RESIDENTIAL = 0;
         public const int COMMERCIAL  = 1;
@@ -38,6 +39,7 @@ namespace ControlBuildingLevelUpMod {
         private static ConcurrentDictionary<ushort, Level> buildings = new ConcurrentDictionary<ushort, Level>();
         */
         private static Dictionary<ushort, Level> buildings = new Dictionary<ushort, Level>();
+        private static List<ushort> buildingsWithServiceProblem = new List<ushort>();
         private static System.Object lockBuilding = new System.Object();
 
         public static void fromByteArray(byte[] data) {
@@ -67,6 +69,7 @@ namespace ControlBuildingLevelUpMod {
             lock (lockBuilding) { 
                 buildings.Add(buildingID, level);
             }
+            Buildings.ForceLevelBuilding(buildingID, level);
         } 
 
         public static void remove(ushort buildingID) {
@@ -79,6 +82,7 @@ namespace ControlBuildingLevelUpMod {
             lock (lockBuilding) { 
                 buildings[buildingID] = level;
             }
+            Buildings.ForceLevelBuilding(buildingID, level);
         }
         
         public static Level getLockLevel(ushort buildingID) {
@@ -115,6 +119,104 @@ namespace ControlBuildingLevelUpMod {
                 case ItemClass.Service.Office: return OFFICE;
                 default: return -1;
             }
+        }
+
+        /** 
+         *   methods added by CoarzFlovv
+         **/
+        public static void LateClearProblemForBuilding(ushort buildingID)
+        {
+            buildingsWithServiceProblem.Add(buildingID);
+        }
+
+        public static void ClearProblems()
+        {
+            foreach (ushort id in buildingsWithServiceProblem)
+            {
+                Building data = Singleton<BuildingManager>.instance.m_buildings.m_buffer[id];
+                data.m_problems = Notification.RemoveProblems(data.m_problems, Notification.Problem.LandValueLow | Notification.Problem.TooFewServices);
+                data.m_serviceProblemTimer = 0;
+                Singleton<BuildingManager>.instance.m_buildings.m_buffer[id] = data;
+            }
+        
+           buildingsWithServiceProblem.Clear();
+        }
+
+        //Method based on GetUpgradeInfo from PrivateBuildingAI
+        public static BuildingInfo GetInfoForLevel(ushort buildingID, ref Building data, ItemClass.Level level)
+        {
+            Randomizer randomizer;
+
+            //fully randomize first level building
+            if(level == 0)
+            {
+                randomizer = Singleton<SimulationManager>.instance.m_randomizer;
+            }
+            else //building based on level and id, as in original code
+            {
+                randomizer = new Randomizer((int)buildingID);
+                for (int i = 0; i <= (int)(level - 1); i++)
+                {
+                    randomizer.Int32(1000u);
+                }
+            }
+
+
+
+            DistrictManager instance = Singleton<DistrictManager>.instance;
+            byte district = instance.GetDistrict(data.m_position);
+            ushort style = instance.m_districts.m_buffer[(int)district].m_Style;
+            return Singleton<BuildingManager>.instance.GetRandomBuildingInfo(ref randomizer, data.Info.m_buildingAI.m_info.m_class.m_service, data.Info.m_buildingAI.m_info.m_class.m_subService, level, data.Width, data.Length, data.Info.m_buildingAI.m_info.m_zoningMode, (int)style);
+        }
+
+        // Method based on UpgradeBuilding from BuildingManager
+        public static bool ForceLevelBuilding(ushort buildingID, Level level)
+        {
+
+            BuildingManager instance = Singleton<BuildingManager>.instance;
+            if (buildingID == 0 || (instance.m_buildings.m_buffer[(int)buildingID].m_flags & Building.Flags.Created) == Building.Flags.None)
+            {
+                return false;
+            }
+            BuildingInfo info = instance.m_buildings.m_buffer[(int)buildingID].Info;
+            if (info == null)
+            {
+                return false;
+            }
+
+            if ((Level) info.m_class.m_level == level)
+            {
+                return false;
+            }
+
+            BuildingInfo upgradeInfo = Buildings.GetInfoForLevel(buildingID, ref instance.m_buildings.m_buffer[(int)buildingID], (ItemClass.Level) level);
+            if (upgradeInfo == null || upgradeInfo == info)
+            {
+                return false;
+            }
+            instance.UpdateBuildingInfo(buildingID, upgradeInfo);
+            upgradeInfo.m_buildingAI.BuildingUpgraded(buildingID, ref instance.m_buildings.m_buffer[(int)buildingID]);
+            int constructionCost = upgradeInfo.m_buildingAI.GetConstructionCost();
+            Singleton<EconomyManager>.instance.FetchResource(EconomyManager.Resource.Construction, constructionCost, upgradeInfo.m_class);
+            int num = 0;
+            while (buildingID != 0)
+            {
+                BuildingInfo info2 = instance.m_buildings.m_buffer[(int)buildingID].Info;
+                if (info2 != null)
+                {
+                    Vector3 position = instance.m_buildings.m_buffer[(int)buildingID].m_position;
+                    float angle = instance.m_buildings.m_buffer[(int)buildingID].m_angle;
+                    BuildingTool.DispatchPlacementEffect(info2, 0, position, angle, info2.m_cellWidth, info2.m_cellLength, false, false);
+                }
+                buildingID = instance.m_buildings.m_buffer[(int)buildingID].m_subBuilding;
+                if (++num > 49152)
+                {
+                    CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
+                    break;
+                }
+            }
+
+            return true;
         }
 
         public static void dump() {

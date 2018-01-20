@@ -25,7 +25,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ControlBuildingLevelUpMod {
+namespace ControlBuildingLevelMod {
     public class ThreadingExtension : ThreadingExtensionBase {
     
         //private float sumTimeDeltas = 0.0f;
@@ -99,6 +99,11 @@ namespace ControlBuildingLevelUpMod {
                     this.updateDistrictView();
                 }
             }
+        }
+
+        public override void OnAfterSimulationFrame()
+        {
+            Buildings.ClearProblems();
         }
 
         private void initBuildingView() {

@@ -1,0 +1,22 @@
+﻿/**
+ * Created by CoarzFlovv on 13.01.2018
+ **/
+
+
+using ColossalFramework;
+using ColossalFramework.UI;
+using ICities;
+using System;
+
+namespace ControlBuildingLevelMod {
+    public class Settings {
+
+        public static bool instantanousUpgradeForSingleBuilding = true;
+
+        public static bool allowDowngrade = false;
+
+        public static bool preventLowLandValue = true;
+
+        
+    }
+}

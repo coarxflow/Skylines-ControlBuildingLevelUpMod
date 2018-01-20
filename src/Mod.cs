@@ -22,13 +22,17 @@ using ColossalFramework.UI;
 using ICities;
 using System;
 
-namespace ControlBuildingLevelUpMod {
+namespace ControlBuildingLevelMod {
     public class Mod: IUserMod {
+
+        public static string InternalName = "CtrlLevel";
+        public static string Version = "1.0.0";
+
         public string Name {
-            get { return "Control Building Level Up"; }
+            get { return "Control Building Level"; }
         }
         public string Description {
-            get { return "Control the level up of your buildings!"; }
+            get { return "Fully control the level of your growable buildings!"; }
         }
     }
 }

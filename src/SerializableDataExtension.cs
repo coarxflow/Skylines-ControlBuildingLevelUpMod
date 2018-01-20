@@ -20,7 +20,7 @@
 using ICities;
 using System;
 
-namespace ControlBuildingLevelUpMod {
+namespace ControlBuildingLevelMod {
     public class SerializableDataExtension : ISerializableDataExtension {
         private const String BUILDINGS_DATA_ID = "ControlBuildingLevelUpMod-buildingsLockLevel";
         private const String DISTRICT_DATA_ID  = "ControlBuildingLevelUpMod-districtsLockLevels";

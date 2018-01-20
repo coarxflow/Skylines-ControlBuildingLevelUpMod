@@ -23,10 +23,9 @@ using ColossalFramework;
 using ColossalFramework.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-using System.IO.Compression;
 using System;
 
-namespace ControlBuildingLevelUpMod {
+namespace ControlBuildingLevelMod {
     class Districts {
         private static Dictionary<ushort, Level[]> districts = new Dictionary<ushort, Level[]>();
         private static System.Object lockDistrict = new System.Object();

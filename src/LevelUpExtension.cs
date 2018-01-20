@@ -18,12 +18,12 @@
 */
 
 using ColossalFramework;
-using ColossalFramework.UI;
+using ColossalFramework.Math;
 using ICities;
 using System;
 using UnityEngine;
 
-namespace ControlBuildingLevelUpMod {
+namespace ControlBuildingLevelMod {
     public class LevelUpExtension : LevelUpExtensionBase {
         
         public override void OnCreated(ILevelUp levelUp) {
@@ -86,8 +86,18 @@ namespace ControlBuildingLevelUpMod {
                                 "\n    lock level is:    " + lockLevel +
                                 "\n    current level is: " + currentLevel +
                                 "\n    target level is:  " + targetLevel);
-                #endif
+#endif
 
+                if (lockLevel > targetLevel && Settings.preventLowLandValue && (Singleton<BuildingManager>.instance.m_buildings.m_buffer[(int)buildingID].m_problems & (Notification.Problem.LandValueLow | Notification.Problem.TooFewServices)) != (Notification.Problem) 0)
+                {
+                    Buildings.LateClearProblemForBuilding(buildingID);
+                }
+
+                if (Settings.allowDowngrade && lockLevel < currentLevel)
+                {
+                    Buildings.ForceLevelBuilding(buildingID, lockLevel);
+                }
+                
                 if (currentLevel > lockLevel) {
                     #if DEBUG
                     Logger.Info("Building level too high: " + buildingID);
