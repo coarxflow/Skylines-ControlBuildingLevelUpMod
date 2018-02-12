@@ -8,12 +8,12 @@ using ColossalFramework.UI;
 using ICities;
 using System;
 
-namespace ControlBuildingLevelMod {
+namespace BuildingStates {
     public class Settings {
 
         public static bool instantanousUpgradeForSingleBuilding = true;
 
-        public static bool allowDowngrade = false;
+        public static bool allowDowngrade = true;
 
         public static bool preventLowLandValue = true;
 

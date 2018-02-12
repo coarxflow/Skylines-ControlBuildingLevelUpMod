@@ -20,7 +20,7 @@
 using ICities;
 using System;
 
-namespace ControlBuildingLevelMod {
+namespace BuildingStates {
     public class SerializableDataExtension : ISerializableDataExtension {
         private const String BUILDINGS_DATA_ID = "ControlBuildingLevelUpMod-buildingsLockLevel";
         private const String DISTRICT_DATA_ID  = "ControlBuildingLevelUpMod-districtsLockLevels";
@@ -41,16 +41,16 @@ namespace ControlBuildingLevelMod {
         }
 
         public void OnLoadData() {
-            #if DEBUG
+#if DEBUG
             Logger.Info("Try to load mod data");
-            #endif
+#endif
+
+            return;
 
             try {
                 if (this.sd != null) {
                     byte[] building_data = this.sd.LoadData(BUILDINGS_DATA_ID);
                     Buildings.fromByteArray(building_data);
-                    byte[] district_data = this.sd.LoadData(DISTRICT_DATA_ID);
-                    Districts.fromByteArray(district_data);
 
                     #if DEBUG
                     Logger.Info("Loading was successful");
@@ -68,20 +68,17 @@ namespace ControlBuildingLevelMod {
         }
 
         public void OnSaveData() {
-            #if DEBUG
+#if DEBUG
             Logger.Info("Try to save mod data");
-            #endif
+#endif
+
+            return;
 
             try {
                 if (this.sd != null) {
                     byte[] building_data = Buildings.toByteArray();
                     if (building_data != null) {
                         this.sd.SaveData(BUILDINGS_DATA_ID, building_data);
-                    }
-
-                    byte[] district_data = Districts.toByteArray();
-                    if (district_data != null) {
-                        this.sd.SaveData(DISTRICT_DATA_ID, district_data);
                     }
                     
                     #if DEBUG

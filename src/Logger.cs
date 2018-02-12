@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using ColossalFramework;
 using ChirpLogger;
 
-namespace ControlBuildingLevelMod {
+namespace BuildingStates {
     public static class Logger {
         const string prefix = "ControlBuildingLevelUpMod: ";
         public static bool inFile = false;

@@ -27,7 +27,7 @@ using System.IO;
 using System;
 using UnityEngine;
 
-namespace ControlBuildingLevelMod {
+namespace BuildingStates {
     public static class Buildings {
         public const int RESIDENTIAL = 0;
         public const int COMMERCIAL  = 1;
@@ -39,7 +39,6 @@ namespace ControlBuildingLevelMod {
         private static ConcurrentDictionary<ushort, Level> buildings = new ConcurrentDictionary<ushort, Level>();
         */
         private static Dictionary<ushort, Level> buildings = new Dictionary<ushort, Level>();
-        private static List<ushort> buildingsWithServiceProblem = new List<ushort>();
         private static System.Object lockBuilding = new System.Object();
 
         public static void fromByteArray(byte[] data) {
@@ -69,34 +68,12 @@ namespace ControlBuildingLevelMod {
             lock (lockBuilding) { 
                 buildings.Add(buildingID, level);
             }
-            Buildings.ForceLevelBuilding(buildingID, level);
         } 
 
         public static void remove(ushort buildingID) {
             lock (lockBuilding) { 
                 buildings.Remove(buildingID);
             }
-        }
-
-        public static void update(ushort buildingID, Level level) {
-            lock (lockBuilding) { 
-                buildings[buildingID] = level;
-            }
-            Buildings.ForceLevelBuilding(buildingID, level);
-        }
-        
-        public static Level getLockLevel(ushort buildingID) {
-            Level buildingLockLevel;
-
-            lock (lockBuilding) { 
-                if (buildings.ContainsKey(buildingID)) {
-                    buildings.TryGetValue(buildingID, out buildingLockLevel);
-                } else {
-                    buildingLockLevel = Level.None;
-                }
-            }
-
-            return buildingLockLevel;
         }
 
         public static Byte getDistrictID(ushort buildingID) {
@@ -124,23 +101,6 @@ namespace ControlBuildingLevelMod {
         /** 
          *   methods added by CoarzFlovv
          **/
-        public static void LateClearProblemForBuilding(ushort buildingID)
-        {
-            buildingsWithServiceProblem.Add(buildingID);
-        }
-
-        public static void ClearProblems()
-        {
-            foreach (ushort id in buildingsWithServiceProblem)
-            {
-                Building data = Singleton<BuildingManager>.instance.m_buildings.m_buffer[id];
-                data.m_problems = Notification.RemoveProblems(data.m_problems, Notification.Problem.LandValueLow | Notification.Problem.TooFewServices);
-                data.m_serviceProblemTimer = 0;
-                Singleton<BuildingManager>.instance.m_buildings.m_buffer[id] = data;
-            }
-        
-           buildingsWithServiceProblem.Clear();
-        }
 
         //Method based on GetUpgradeInfo from PrivateBuildingAI
         public static BuildingInfo GetInfoForLevel(ushort buildingID, ref Building data, ItemClass.Level level)
@@ -217,6 +177,46 @@ namespace ControlBuildingLevelMod {
             }
 
             return true;
+        }
+
+        // based on SimulationStepActive from PrivateBuildingAI
+        public static void AbandonBuilding(ushort buildingID)
+        {
+            Building b = Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID];
+
+            b.m_flags &= ~Building.Flags.Active;
+            b.m_flags |= Building.Flags.Abandoned;
+            //b.m_problems = (Notification.Problem.FatalProblem | (b.m_problems & ~Notification.Problem.MajorProblem));
+
+            //base.RemovePeople(buildingID, ref buildingData, 100);
+            InstanceID empty = InstanceID.Empty;
+            empty.Building = buildingID;
+            InstanceManager.Group group = Singleton<InstanceManager>.instance.GetGroup(empty);
+            DisasterHelpers.RemovePeople(group, buildingID, ref b.m_citizenUnits, 100, ref Singleton<SimulationManager>.instance.m_randomizer);
+
+            b.Info.m_buildingAI.BuildingDeactivated(buildingID, ref b);
+            Singleton<BuildingManager>.instance.UpdateBuildingRenderer(buildingID, true);
+
+            Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID] = b;
+        }
+
+        public static void CollapseBuilding(ushort buildingID)
+        {
+            Building b = Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID];
+
+            b.Info.m_buildingAI.CollapseBuilding(buildingID, ref b, null, false, false, 0);
+
+            Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID] = b;
+        }
+
+        public static void RestoreBuilding(ushort buildingID)
+        {
+            Building b = Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID];
+
+            b.m_flags &= ~(Building.Flags.Abandoned | Building.Flags.Collapsed);
+            b.m_flags |= Building.Flags.Active;
+
+            Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID] = b;
         }
 
         public static void dump() {
