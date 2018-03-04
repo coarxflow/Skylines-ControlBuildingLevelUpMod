@@ -50,42 +50,17 @@ namespace BuildingStates {
 
         private void installInPanel(WorldInfoPanel panel)
         {
-            // Clone template and keep only dropdown
-            UIComponent optionsDropdownTemplate = UITemplateManager.Get("OptionsDropdownTemplate"); ;
-            UIDropDown statesDropDown = optionsDropdownTemplate.Find<UIDropDown>("Dropdown");
+            int spriteWidth = 32;
+            int spriteHeight = 32;
+            string[] tooltips = {
+                 "Click to change building state",
+                 "Building Abandoned",
+                 "Building Collapsed"
+            };
+            StatesButton statesButton = new StatesButton(m_zonedBuildingInfoPanel.component, spriteWidth, spriteHeight, 3, "icons.states.png", "BuildingStates", tooltips);
 
-            // positioning
-            panel.component.AttachUIComponent(statesDropDown.gameObject);
-            optionsDropdownTemplate.AlignTo(panel.component, UIAlignAnchor.TopLeft);
-            optionsDropdownTemplate.relativePosition += new Vector3(100f, 130f, 0f);
-            /*UIComponent progressBar = panel.component.Find("LevelProgress");
-            if(progressBar != null)
-            {
-                //statesDropDown.AlignTo(panel.component, UIAlignAnchor.TopLeft);
-                statesDropDown.transform.position += new Vector3(200f, 200f, 0f);
-            } else {
-                //statesDropDown.AlignTo(panel.component, UIAlignAnchor.TopRight);
-                statesDropDown.relativePosition += new Vector3(200f, 80f, 0f);
-            }*/
-
-            // Styling
-            statesDropDown.name = "BuildingStateDropDown";
-            statesDropDown.height = 20f;
-            statesDropDown.width = 100f;
-            statesDropDown.triggerButton.size = new Vector2(100f,20f);
-            //statesDropDown.textScale = 0.5f;
-            //statesDropDown.textFieldPadding = new RectOffset(0,0,0,0);
-
-            // States list
-            statesDropDown.AddItem("Active");
-            statesDropDown.AddItem("Abandoned");
-            statesDropDown.AddItem("Collapsed");
-
-            statesDropDown.tooltip = "Pick state of the building";
-
-            statesDropDown.eventSelectedIndexChanged += (e, index) =>
-            {
-                switch (index)
+            statesButton.msb.eventActiveStateIndexChanged += (component, value) => {
+                switch (value)
                 {
                     case 0:
                         Buildings.RestoreBuilding(this.getSelectedBuildingID(panel));
@@ -94,25 +69,28 @@ namespace BuildingStates {
                         Buildings.AbandonBuilding(this.getSelectedBuildingID(panel));
                         break;
                     case 2:
+                        Buildings.RestoreBuilding(this.getSelectedBuildingID(panel));
                         Buildings.CollapseBuilding(this.getSelectedBuildingID(panel));
                         break;
                     default:
                         break;
                 }
             };
+            statesButton.msb.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.TopRight);
+            statesButton.msb.relativePosition += new Vector3(-80f, 80f, 0f);
 
             UpdateStatesDropDown callback = (flags) => {
                 if ((flags & Building.Flags.Abandoned) != (Building.Flags)0)
                 {
-                    statesDropDown.selectedIndex = 1;
+                    statesButton.SetState(1);
                 }
                 else if ((flags & Building.Flags.Collapsed) != (Building.Flags)0)
                 {
-                    statesDropDown.selectedIndex = 2;
+                    statesButton.SetState(2);
                 }
                 else
                 {
-                    statesDropDown.selectedIndex = 0;
+                    statesButton.SetState(0);
                 }
             };
 

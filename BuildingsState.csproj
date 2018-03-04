@@ -35,11 +35,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\Buildings.cs" />
     <Compile Include="src\ModdedUI.cs" />
-    <Compile Include="src\Logging\Chirp.cs" />
-    <Compile Include="src\Logging\ChirpLogger.cs" />
     <Compile Include="src\Settings.cs" />
     <Compile Include="src\Mod.cs" />
     <Compile Include="src\LoadingExtension.cs" />
+    <Compile Include="src\StatesButton.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="icons\states.png" />
@@ -54,6 +53,7 @@
     <Reference Include="ICities">
       <HintPath>..\..\..\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\ICities.dll</HintPath>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\UnityEngine.dll</HintPath>
