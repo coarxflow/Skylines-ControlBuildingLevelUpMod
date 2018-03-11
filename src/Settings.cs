@@ -13,7 +13,7 @@ namespace ControlBuildingLevelMod {
 
         public static bool instantanousUpgradeForSingleBuilding = true;
 
-        public static bool allowDowngrade = false;
+        public static bool allowDowngrade = true;
 
         public static bool preventLowLandValue = true;
 

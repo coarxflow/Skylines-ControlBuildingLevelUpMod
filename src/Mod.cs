@@ -25,11 +25,11 @@ using System;
 namespace ControlBuildingLevelMod {
     public class Mod: IUserMod {
 
-        public static string InternalName = "CtrlLevel";
-        public static string Version = "1.0.0";
+        public static string InternalName = "ForceLevel";
+        public static string Version = "1.0.1";
 
         public string Name {
-            get { return "Control Building Level"; }
+            get { return "Force Building Level"; }
         }
         public string Description {
             get { return "Fully control the level of your growable buildings!"; }

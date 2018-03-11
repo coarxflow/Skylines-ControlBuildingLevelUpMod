@@ -92,18 +92,16 @@ namespace ControlBuildingLevelMod {
                 {
                     Buildings.LateClearProblemForBuilding(buildingID);
                 }
-
-                if (Settings.allowDowngrade && lockLevel < currentLevel)
-                {
-                    Buildings.ForceLevelBuilding(buildingID, lockLevel);
-                }
                 
                 if (currentLevel > lockLevel) {
-                    #if DEBUG
+#if DEBUG
                     Logger.Info("Building level too high: " + buildingID);
-                    #endif
-                    
-                    this.bulldozeBuilding(buildingID);
+#endif
+
+                    if (Settings.allowDowngrade)
+                        Buildings.ForceLevelBuilding(buildingID, lockLevel);
+                    else
+                        this.bulldozeBuilding(buildingID);
                     //TODO: b.m_flags = Building.Flags.Downgrading; ?
                 }
 
