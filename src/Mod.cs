@@ -29,10 +29,10 @@ namespace BuildingStates{
         public static string Version = "1.0.0";
 
         public string Name {
-            get { return "BuildingStates"; }
+            get { return "Building States"; }
         }
         public string Description {
-            get { return "Fully control the level of your growable buildings!"; }
+            get { return "Give buildings the abandoned or collapsed look!"; }
         }
     }
 }

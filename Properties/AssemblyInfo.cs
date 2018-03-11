@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ControlBuildingLevelUpMod")]
+[assembly: AssemblyProduct("BuildingStates")]
 [assembly: AssemblyCopyright("Copyright © 2015, Max Stark <max.stark88@web.de>. Edited 2018 by CoarxFlovv.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

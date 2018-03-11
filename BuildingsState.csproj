@@ -7,8 +7,8 @@
     <ProjectGuid>{170652DA-A888-403A-9AA5-2004D6ED7DE9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ControlBuildingLevelMod</RootNamespace>
-    <AssemblyName>ControlBuildingLevelMod</AssemblyName>
+    <RootNamespace>BuildingStates</RootNamespace>
+    <AssemblyName>BuildingStates</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

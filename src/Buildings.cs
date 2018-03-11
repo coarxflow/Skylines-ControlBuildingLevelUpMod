@@ -55,6 +55,8 @@ namespace BuildingStates {
         {
             Building b = Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID];
 
+            b.m_flags &= ~Building.Flags.Abandoned;
+
             b.Info.m_buildingAI.CollapseBuilding(buildingID, ref b, null, false, false, 0);
 
             Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID] = b;
@@ -79,8 +81,16 @@ namespace BuildingStates {
             b.m_flags &= ~(Building.Flags.Abandoned | Building.Flags.Collapsed);
             b.m_flags |= Building.Flags.Active;
 
+            /*if((b.m_flags & Building.Flags.Collapsed) != Building.Flags.None) //rebuild animation
+            {
+                Building.Frame frame = b.GetLastFrameData();
+                frame.m_constructState = 0;
+                b.m_flags |= Building.Flags.Upgrading;
+                b.SetLastFrameData(frame);
+            }*/
+            
             Notification.Problem problems = b.m_problems;
-            b.m_problems &= ~Notification.Problem.StructureDamaged;
+            b.m_problems &= ~(Notification.Problem.StructureDamaged | Notification.Problem.FatalProblem);
             if (b.m_problems != problems)
             {
                 Singleton<BuildingManager>.instance.UpdateNotifications(buildingID, problems, b.m_problems);

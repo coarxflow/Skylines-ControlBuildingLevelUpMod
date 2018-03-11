@@ -30,7 +30,8 @@ namespace BuildingStates {
 
         ZonedBuildingWorldInfoPanel m_zonedBuildingInfoPanel;
         BuildingWorldInfoPanel m_generalBuildingInfoPanel;
-        EventBuildingWorldInfoPanel m_eventBuildingInfoPanel;
+        EventBuildingWorldInfoPanel m_footballBuildingInfoPanel;
+        EventBuildingWorldInfoPanel m_concertBuildingInfoPanel;
 
         ushort m_currentSelectedBuildingID;
 
@@ -38,17 +39,25 @@ namespace BuildingStates {
         {
             m_zonedBuildingInfoPanel = GameObject.Find("(Library) ZonedBuildingWorldInfoPanel").GetComponent<ZonedBuildingWorldInfoPanel>();
             m_generalBuildingInfoPanel = GameObject.Find("(Library) CityServiceWorldInfoPanel").GetComponent<BuildingWorldInfoPanel>();
-            m_eventBuildingInfoPanel = GameObject.Find("(Library) FootballPanel").GetComponent<EventBuildingWorldInfoPanel>();
+            m_footballBuildingInfoPanel = GameObject.Find("(Library) FootballPanel").GetComponent<EventBuildingWorldInfoPanel>();
+            m_concertBuildingInfoPanel = GameObject.Find("(Library) FestivalPanel").GetComponent<EventBuildingWorldInfoPanel>();
+            WorldInfoPanel[] wip = GameObject.FindObjectsOfType<EventBuildingWorldInfoPanel>();
+            foreach (var item in wip)
+            {
+                CODebug.Log(LogChannel.Modding, "WIP "+ item.name);
+            }
 
-            this.installInPanel(m_zonedBuildingInfoPanel);
+            this.installInPanel(m_zonedBuildingInfoPanel, 0);
             if(m_generalBuildingInfoPanel != null)
-                this.installInPanel(m_generalBuildingInfoPanel);
-            if(m_eventBuildingInfoPanel != null)
-                this.installInPanel(m_eventBuildingInfoPanel);
+                this.installInPanel(m_generalBuildingInfoPanel, 1);
+            if(m_footballBuildingInfoPanel != null)
+                this.installInPanel(m_footballBuildingInfoPanel, 2);
+            if (m_concertBuildingInfoPanel != null)
+                this.installInPanel(m_concertBuildingInfoPanel, 2);
 
         }
 
-        private void installInPanel(WorldInfoPanel panel)
+        private void installInPanel(WorldInfoPanel panel, ushort positionCase)
         {
             int spriteWidth = 32;
             int spriteHeight = 32;
@@ -57,9 +66,14 @@ namespace BuildingStates {
                  "Building Abandoned",
                  "Building Collapsed"
             };
-            StatesButton statesButton = new StatesButton(m_zonedBuildingInfoPanel.component, spriteWidth, spriteHeight, 3, "icons.states.png", "BuildingStates", tooltips);
 
+            StatesButton statesButton = new StatesButton(panel.component, spriteWidth, spriteHeight, 3, "icons.states.png", "BuildingStates", tooltips);
+            
             statesButton.msb.eventActiveStateIndexChanged += (component, value) => {
+
+                if (!m_allowEvents)
+                    return;
+
                 switch (value)
                 {
                     case 0:
@@ -69,15 +83,25 @@ namespace BuildingStates {
                         Buildings.AbandonBuilding(this.getSelectedBuildingID(panel));
                         break;
                     case 2:
-                        Buildings.RestoreBuilding(this.getSelectedBuildingID(panel));
                         Buildings.CollapseBuilding(this.getSelectedBuildingID(panel));
                         break;
                     default:
                         break;
                 }
             };
-            statesButton.msb.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.TopRight);
-            statesButton.msb.relativePosition += new Vector3(-80f, 80f, 0f);
+            statesButton.msb.AlignTo(panel.component, UIAlignAnchor.TopRight);
+            switch(positionCase)
+            {
+                case 0: //Zoned Building
+                    statesButton.msb.relativePosition += new Vector3(-75f, 80f, 0f);
+                    break;
+                case 1: //Service Building
+                    statesButton.msb.relativePosition += new Vector3(-50f, 80f, 0f);
+                    break;
+                case 2: //Event Building
+                    statesButton.msb.relativePosition += new Vector3(-50f, 90f, 0f);
+                    break;
+            }
 
             UpdateStatesDropDown callback = (flags) => {
                 if ((flags & Building.Flags.Abandoned) != (Building.Flags)0)
@@ -96,18 +120,20 @@ namespace BuildingStates {
 
             panel.component.eventPositionChanged += (inst1, inst2) =>
             {
-                if (m_zonedBuildingInfoPanel.component.isVisible)
+                if (panel.component.isVisible)
                     OnSelected(panel, callback);
             };
 
             panel.component.eventOpacityChanged += (inst1, inst2) =>
             {
-                if (m_zonedBuildingInfoPanel.component.isVisible)
+                if (panel.component.isVisible)
                     OnSelected(panel, callback);
             };
         }
 
         private delegate void UpdateStatesDropDown(Building.Flags flags);
+
+        bool m_allowEvents = true;
 
         void OnSelected(WorldInfoPanel panel, UpdateStatesDropDown callback)
         {
@@ -121,7 +147,9 @@ namespace BuildingStates {
                 m_currentSelectedBuildingID = instanceId.Building;
 
                 Building build = Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID];
+                m_allowEvents = false;
                 callback(build.m_flags);
+                m_allowEvents = true;
             }
             else
             {
